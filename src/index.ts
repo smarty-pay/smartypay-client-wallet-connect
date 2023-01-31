@@ -7,7 +7,7 @@ import {Web3Api, Web3ApiEvent, RawProvider, Web3ApiProvider} from 'smartypay-cli
 import {Blockchains, util} from 'smartypay-client-model';
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
-const Name = 'SmartyPayWalletConnect';
+const Name = 'WalletConnect';
 
 
 export const SmartyPayWalletConnectProvider: Web3ApiProvider = {
