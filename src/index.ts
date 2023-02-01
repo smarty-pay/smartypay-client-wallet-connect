@@ -92,11 +92,15 @@ class SmartyPayWalletConnect implements Web3Api {
 
       this.listeners.fireEvent('wallet-network-changed', chainId);
     });
+
+    provider.on("disconnect", () => {
+      this.disconnect();
+    });
   }
 
   async getAddress() {
     const provider = this.checkConnection();
-    const accounts = await provider.request({method: 'eth_requestAccounts'});
+    const accounts = await provider.request({method: 'eth_accounts'});
     return accounts[0];
   }
 
@@ -108,8 +112,12 @@ class SmartyPayWalletConnect implements Web3Api {
 
   async disconnect() {
 
+    if( ! this.nativeProvider){
+      return;
+    }
+
     try {
-      this.nativeProvider?.disconnect();
+      await this.nativeProvider.disconnect();
     } catch (e){
       console.error(`${Name}: disconnect error`, e);
     }
