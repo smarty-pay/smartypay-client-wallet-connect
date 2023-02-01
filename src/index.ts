@@ -16,6 +16,9 @@ export const SmartyPayWalletConnectProvider: Web3ApiProvider = {
   },
   makeWeb3Api(): Web3Api {
     return new SmartyPayWalletConnect();
+  },
+  hasWallet(): boolean {
+    return true;
   }
 }
 
@@ -40,7 +43,7 @@ class SmartyPayWalletConnect implements Web3Api {
   static apiName = Name;
 
   hasWallet(): boolean {
-    return true;
+    return SmartyPayWalletConnectProvider.hasWallet();
   }
 
   async connect() {
@@ -104,6 +107,13 @@ class SmartyPayWalletConnect implements Web3Api {
   }
 
   async disconnect() {
+
+    try {
+      this.nativeProvider?.disconnect();
+    } catch (e){
+      console.error(`${Name}: disconnect error`, e);
+    }
+
     this.nativeProvider = undefined;
     this.listeners.fireEvent('wallet-disconnected');
   }
