@@ -3,19 +3,24 @@
   @author Evgeny Dolganov <evgenij.dolganov@gmail.com>
 */
 
-import {Web3Api, Web3ApiEvent, RawProvider, Web3ApiProvider} from 'smartypay-client-web3-common';
+import {RawProvider, Web3Api, Web3ApiEvent, Web3ApiProvider, Web3Common} from 'smartypay-client-web3-common';
 import {Blockchains, util} from 'smartypay-client-model';
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import WalletConnectProvider from '@walletconnect/web3-provider';
 
 const Name = 'WalletConnect';
+
+
+export interface SmartyPayWalletConnectOpt {
+  customNativeProvider?: ()=> Promise<WalletConnectProvider>
+}
 
 
 export const SmartyPayWalletConnectProvider: Web3ApiProvider = {
   name(): string {
     return Name;
   },
-  makeWeb3Api(): Web3Api {
-    return new SmartyPayWalletConnect();
+  makeWeb3Api(opt?: SmartyPayWalletConnectOpt): Web3Api {
+    return new SmartyPayWalletConnect(opt);
   },
   hasWallet(): boolean {
     return true;
@@ -27,6 +32,9 @@ class SmartyPayWalletConnect implements Web3Api {
   private useWalletEvents = false;
   private listeners = new util.ListenersMap<Web3ApiEvent>();
   private nativeProvider: WalletConnectProvider|undefined;
+
+  constructor(readonly opt?: SmartyPayWalletConnectOpt) {
+  }
 
   addListener(event: Web3ApiEvent, listener: (...args: any[]) => void) {
     this.listeners.addListener(event, listener);
@@ -56,7 +64,10 @@ class SmartyPayWalletConnect implements Web3Api {
     }
 
     // Show QR code screen
-    const provider = makeWalletConnectProvider();
+    const provider: WalletConnectProvider = this.opt?.customNativeProvider?
+      await this.opt.customNativeProvider()
+      : makeWalletConnectProvider();
+
     await provider.enable();
 
     this.nativeProvider = provider;
@@ -101,7 +112,7 @@ class SmartyPayWalletConnect implements Web3Api {
   async getAddress() {
     const provider = this.checkConnection();
     const accounts = await provider.request({method: 'eth_accounts'});
-    return accounts[0];
+    return Web3Common.getNormalAddress(accounts[0]);
   }
 
   async getChainId() {
