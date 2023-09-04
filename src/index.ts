@@ -5,13 +5,17 @@
 
 import {RawProvider, Web3Api, Web3ApiEvent, Web3ApiProvider, Web3Common} from 'smartypay-client-web3-common';
 import {Blockchains, util} from 'smartypay-client-model';
-import WalletConnectProvider from '@walletconnect/web3-provider';
+import Provider from '@walletconnect/ethereum-provider';
 
 const Name = 'WalletConnect';
 
+// Test api key, may be deleted any time
+const TestApiKey = 'e38ce8e95346af313bfe015d76fcc1a0';
+
 
 export interface SmartyPayWalletConnectOpt {
-  customNativeProvider?: ()=> Promise<WalletConnectProvider>
+  customNativeProvider?: ()=> Promise<Provider>,
+  walletConnectApiKey?: string,
 }
 
 
@@ -31,7 +35,7 @@ class SmartyPayWalletConnect implements Web3Api {
 
   private useWalletEvents = false;
   private listeners = new util.ListenersMap<Web3ApiEvent>();
-  private nativeProvider: WalletConnectProvider|undefined;
+  private nativeProvider: Provider|undefined;
 
   constructor(readonly opt?: SmartyPayWalletConnectOpt) {
   }
@@ -63,11 +67,14 @@ class SmartyPayWalletConnect implements Web3Api {
       throw util.makeError(Name, 'no WalletConnect');
     }
 
-    // Show QR code screen
-    const provider: WalletConnectProvider = this.opt?.customNativeProvider?
-      await this.opt.customNativeProvider()
-      : makeWalletConnectProvider();
+    const apiKey = this.opt?.walletConnectApiKey || TestApiKey;
 
+    // make provider
+    const provider: Provider = this.opt?.customNativeProvider?
+        await this.opt.customNativeProvider()
+        : await makeWalletConnectProvider(apiKey);
+
+    // Show QR code screen
     await provider.enable();
 
     this.nativeProvider = provider;
@@ -94,25 +101,24 @@ class SmartyPayWalletConnect implements Web3Api {
       }
     });
 
-    provider.on('chainChanged', (chainId: number) => {
+    provider.on('chainChanged', (chainId: string) => {
 
       // skip events on disconnected state
       if( this.nativeProvider !== provider){
         return;
       }
 
-      this.listeners.fireEvent('wallet-network-changed', chainId);
+      this.listeners.fireEvent('wallet-network-changed', Web3Common.toNumberFromHex(chainId));
     });
 
-    provider.on("disconnect", () => {
+    provider.on('disconnect', () => {
       this.disconnect();
     });
   }
 
   async getAddress() {
     const provider = this.checkConnection();
-    const accounts = await provider.request({method: 'eth_accounts'});
-    return Web3Common.getNormalAddress(accounts[0]);
+    return Web3Common.getNormalAddress(provider.accounts[0]);
   }
 
   async getChainId() {
@@ -147,9 +153,9 @@ class SmartyPayWalletConnect implements Web3Api {
     return provider as RawProvider;
   }
 
-  checkConnection(): WalletConnectProvider {
+  checkConnection(): Provider {
     if (!this.nativeProvider) {
-      throw util.makeError(Name,'WalletConnect provider not connected');
+      throw util.makeError(Name, 'WalletConnect provider not connected');
     }
     return this.nativeProvider;
   }
@@ -157,23 +163,31 @@ class SmartyPayWalletConnect implements Web3Api {
 
 
 
-function makeWalletConnectProvider(): WalletConnectProvider {
+async function makeWalletConnectProvider(apiKey: string): Promise<Provider> {
 
-  const rpc = {
-    1: 'https://cloudflare-eth.com',
-    3: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    4: 'https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    5: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    6: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    [Blockchains.BinanceMainNet.chainId]: Blockchains.BinanceMainNet.rpc,
-    [Blockchains.BinanceTestNet.chainId]: Blockchains.BinanceTestNet.rpc,
-    [Blockchains.PolygonMainNet.chainId]: Blockchains.PolygonMainNet.rpc,
-    [Blockchains.PolygonMumbaiNet.chainId]: Blockchains.PolygonMumbaiNet.rpc,
-    [Blockchains.ArbitrumMainNet.chainId]: Blockchains.ArbitrumMainNet.rpc,
-    [Blockchains.ArbitrumTestNet.chainId]: Blockchains.ArbitrumTestNet.rpc,
+  const rpcMap = {
+    [Web3Common.toHexString(1)]: 'https://cloudflare-eth.com',
+    [Web3Common.toHexString(3)]: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    [Web3Common.toHexString(4)]: 'https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    [Web3Common.toHexString(5)]: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    [Web3Common.toHexString(6)]: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    [Blockchains.BinanceMainNet.chainIdHex]: Blockchains.BinanceMainNet.rpc,
+    [Blockchains.BinanceTestNet.chainIdHex]: Blockchains.BinanceTestNet.rpc,
+    [Blockchains.PolygonMainNet.chainIdHex]: Blockchains.PolygonMainNet.rpc,
+    [Blockchains.PolygonMumbaiNet.chainIdHex]: Blockchains.PolygonMumbaiNet.rpc,
+    [Blockchains.ArbitrumMainNet.chainIdHex]: Blockchains.ArbitrumMainNet.rpc,
+    [Blockchains.ArbitrumTestNet.chainIdHex]: Blockchains.ArbitrumTestNet.rpc,
   }
 
-  return new WalletConnectProvider({
-    rpc
-  });
+  const config = {
+    projectId: apiKey,
+    // Valid pair of "chains" and "optionalChains" params.
+    // See "chains not supported" issuie: https://github.com/MetaMask/metamask-mobile/issues/6688
+    chains: [1],
+    optionalChains: Object.keys(rpcMap).map(hexKey => Web3Common.toNumberFromHex(hexKey)),
+    showQrModal: true,
+    rpcMap,
+  } as any;
+
+  return Provider.init(config);
 }

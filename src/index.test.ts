@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 /*
   SMARTy Pay Client WalletConnect
   @author Evgeny Dolganov <evgenij.dolganov@gmail.com>
@@ -40,11 +43,11 @@ describe('SmartyPayWalletConnectProvider', ()=>{
         await api.connect();
 
         // check with invalid address
-        nativeProvider.request = ()=> [invalidAddress];
+        nativeProvider.accounts = [invalidAddress];
         expect(await api.getAddress()).toBe(validAddress);
 
         // check with valid address
-        nativeProvider.request = ()=> [validAddress];
+        nativeProvider.accounts = [validAddress];
         expect(await api.getAddress()).toBe(validAddress);
 
       });
