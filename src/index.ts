@@ -171,12 +171,13 @@ async function makeWalletConnectProvider(apiKey: string): Promise<Provider> {
     [Web3Common.toHexString(4)]: 'https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     [Web3Common.toHexString(5)]: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     [Web3Common.toHexString(6)]: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    [Blockchains.EthereumSepolia.chainIdHex]: Blockchains.EthereumSepolia.rpc,
     [Blockchains.BinanceMainNet.chainIdHex]: Blockchains.BinanceMainNet.rpc,
     [Blockchains.BinanceTestNet.chainIdHex]: Blockchains.BinanceTestNet.rpc,
     [Blockchains.PolygonMainNet.chainIdHex]: Blockchains.PolygonMainNet.rpc,
     [Blockchains.PolygonMumbaiNet.chainIdHex]: Blockchains.PolygonMumbaiNet.rpc,
     [Blockchains.ArbitrumMainNet.chainIdHex]: Blockchains.ArbitrumMainNet.rpc,
-    [Blockchains.ArbitrumTestNet.chainIdHex]: Blockchains.ArbitrumTestNet.rpc,
+    [Blockchains.ArbitrumSepolia.chainIdHex]: Blockchains.ArbitrumSepolia.rpc,
   }
 
   const config = {

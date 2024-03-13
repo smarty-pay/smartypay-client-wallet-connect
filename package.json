@@ -1,6 +1,6 @@
 {
   "name": "smartypay-client-wallet-connect",
-  "version": "2.8.0",
+  "version": "2.17.0",
   "description": "WalletConnect support for SmartyPay api",
   "author": "Evgeny Dolganov <evgenij.dolganov@gmail.com>",
   "repository": "https://github.com/smarty-pay/smartypay-client-wallet-connect",
@@ -23,8 +23,8 @@
   "dependencies": {
     "@walletconnect/ethereum-provider": "^2.10.0",
     "@walletconnect/modal": "^2.6.1",
-    "smartypay-client-model": "^2.0.0",
-    "smartypay-client-web3-common": "^2.8.0"
+    "smartypay-client-model": "^2.17.1",
+    "smartypay-client-web3-common": "^2.17.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",
