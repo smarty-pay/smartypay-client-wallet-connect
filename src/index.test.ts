@@ -6,39 +6,33 @@
   @author Evgeny Dolganov <evgenij.dolganov@gmail.com>
 */
 
+import { SmartyPayWalletConnectProvider } from './index';
 
-import {SmartyPayWalletConnectOpt, SmartyPayWalletConnectProvider} from './index';
+import type { SmartyPayWalletConnectOpt } from './index';
 
-describe('SmartyPayWalletConnectProvider', ()=>{
-
+describe('SmartyPayWalletConnectProvider', () => {
   const validAddress = '0x14186C8215985f33845722730c6382443Bf9EC65';
   const invalidAddress = validAddress.toLowerCase();
 
-
-  describe('Web3Api', ()=>{
-
+  describe('Web3Api', () => {
     let nativeProvider: any;
     let makeApiOpt: SmartyPayWalletConnectOpt;
 
-    beforeEach(()=>{
-
+    beforeEach(() => {
       // stub
       nativeProvider = {
-        enable: jest.fn(()=> true),
+        enable: jest.fn(() => true),
         request: jest.fn(),
         on: jest.fn(),
       };
 
       makeApiOpt = {
-        customNativeProvider: async ()=> nativeProvider
-      }
+        customNativeProvider: () => nativeProvider,
+      };
+    });
 
-    })
-
-    describe('getAddress', ()=> {
-
+    describe('getAddress', () => {
       test('should convert to case-sensitive address format', async () => {
-
         const api = SmartyPayWalletConnectProvider.makeWeb3Api(makeApiOpt);
         await api.connect();
 
@@ -49,17 +43,13 @@ describe('SmartyPayWalletConnectProvider', ()=>{
         // check with valid address
         nativeProvider.accounts = [validAddress];
         expect(await api.getAddress()).toBe(validAddress);
-
       });
     });
   });
 
-  describe('hasWallet', ()=>{
-    test('should always true', ()=>{
+  describe('hasWallet', () => {
+    test('should always true', () => {
       expect(SmartyPayWalletConnectProvider.hasWallet()).toBe(true);
     });
-  })
-
-})
-
-
+  });
+});
