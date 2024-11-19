@@ -1,2 +1,2 @@
 # smartypay-client-wallet-connect
-WalletConnect support for SmartyPay api
+WalletConnect support for Smarty Pay api

@@ -1,5 +1,5 @@
 /*
-  SMARTy Pay Client WalletConnect
+  Smarty Pay Client WalletConnect
   @author Evgeny Dolganov <evgenij.dolganov@gmail.com>
 */
 
